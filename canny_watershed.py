@@ -29,7 +29,7 @@ part of canny
 # apply (Gaussian) filter for canny edge detector preprocessing
 gaussian = cv.GaussianBlur(marker, (5, 5), 0)
 # apply canny edge detection
-canny = cv.Canny(gaussian, 100, 300)
+canny = cv.Canny(gaussian, 100, 300, 3, L2gradient = True)
 
 '''
 part of watershed
