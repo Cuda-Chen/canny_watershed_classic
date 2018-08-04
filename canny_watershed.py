@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import cv2 as cv
 import numpy as np
+import os
 
-def canny_watershed(filename, sigma, min_edge, ratio):
+def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # first, read the image
     #image = cv.imread('coins.jpg')
     #image = cv.imread('四破魚(藍圓鰺)2.jpg')
-    image = cv.imread(filename)
+    image = cv.imread(inputfile)
     cv.imshow('Original image', image)
 
     '''
@@ -58,6 +59,8 @@ def canny_watershed(filename, sigma, min_edge, ratio):
 
     # Display the image
     cv.imshow("Watershed", final) 
+    # Save the output image
+    cv.imwrite(outputfile, final)
     # Wait for key stroke
     cv.waitKey()
 
@@ -70,5 +73,9 @@ if __name__ == "__main__":
             params = []
             for param in line.split():
                 params.append(param)
-            canny_watershed(params[0], float(params[1]), int(params[2]), int(params[3]))
+            outputfile = os.path.splitext(params[0])[0] + '_' + \
+                         params[1] + '_' + params[2] + '_' + params[3] + '.bmp'
+            canny_watershed(params[0], outputfile, float(params[1]), int(params[2]), int(params[3]))
+            #filename = os.path.splitext(params[0])[0]
+            #print(filename)
     print("end")
