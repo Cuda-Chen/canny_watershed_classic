@@ -64,5 +64,11 @@ def canny_watershed(filename, sigma, min_edge, ratio):
 if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
-    canny_watershed('四破魚(藍圓鰺)2.jpg', 0, 100, 3)
+    #canny_watershed('四破魚(藍圓鰺)2.jpg', 0, 100, 3)
+    with open('file_lists.txt', 'r') as f:
+        for line in f:
+            params = []
+            for param in line.split():
+                params.append(param)
+            canny_watershed(params[0], float(params[1]), int(params[2]), int(params[3]))
     print("end")
