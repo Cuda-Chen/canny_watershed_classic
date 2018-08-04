@@ -5,7 +5,8 @@ import numpy as np
 def canny_watershed(filename, sigma, min_edge, ratio):
     # first, read the image
     #image = cv.imread('coins.jpg')
-    image = cv.imread('四破魚(藍圓鰺)2.jpg')
+    #image = cv.imread('四破魚(藍圓鰺)2.jpg')
+    image = cv.imread(filename)
     cv.imshow('Original image', image)
 
     '''
@@ -28,9 +29,9 @@ def canny_watershed(filename, sigma, min_edge, ratio):
     part of canny
     '''
     # apply (Gaussian) filter for canny edge detector preprocessing
-    gaussian = cv.GaussianBlur(marker, (5, 5), 0)
+    gaussian = cv.GaussianBlur(marker, (5, 5), sigma, sigma)
     # apply canny edge detection
-    canny = cv.Canny(gaussian, 100, 300, 3, L2gradient = True)
+    canny = cv.Canny(gaussian, min_edge, min_edge * ratio, 3, L2gradient = True)
 
     '''
     part of watershed
@@ -62,5 +63,6 @@ def canny_watershed(filename, sigma, min_edge, ratio):
 
 if __name__ == "__main__":
     print("Hello world")
-    canny_watershed(1, 1, 1, 1)
+    #canny_watershed(1, 1, 1, 1)
+    canny_watershed('四破魚(藍圓鰺)2.jpg', 0, 100, 3)
     print("end")
