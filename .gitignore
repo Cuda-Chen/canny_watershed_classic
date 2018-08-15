@@ -105,3 +105,6 @@ venv.bak/
 
 # ignore output BMP image
 *.bmp
+
+# ignore result_image directory
+result_image/
