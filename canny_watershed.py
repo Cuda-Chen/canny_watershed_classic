@@ -57,10 +57,34 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 
     # Apply watershed algorithm
     cv.watershed(image, markers)
+    
 
+    '''
     mark = markers.astype('uint8')
     mark = cv.bitwise_not(mark)
     cv.imshow('marker v2', mark)
+    '''
+    
+    # Apply thresholding on the image to convert to binary image
+    m = cv.convertScaleAbs(markers)
+    ret, thresh = cv.threshold(m, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    cv.imshow('thresh', thresh)
+
+    # Invert the thresh
+    thresh_inv = cv.bitwise_not(thresh)
+    cv.imshow('thresh_inv', thresh_inv)
+
+    # Bitwise and with the image mask thresh
+    res = cv.bitwise_and(image, image, mask = thresh)
+    cv.imshow('res', res)
+
+    # Bitwise and the image with mask as threshold invert
+    res3 = cv.bitwise_and(image, image, mask = thresh_inv)
+    cv.imshow('res3', res3)
+    # Take the weighted average
+    res4 = cv.addWeighted(res, 1, res3, 1, 0)
+    cv.imshow('marker v2', res4)
+    
     
     # Generate random color
     colors = []
@@ -90,14 +114,19 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # Apply thresholding on the image to convert to binary image
     m = cv.convertScaleAbs(marker32)
     ret, thresh = cv.threshold(m, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    cv.imshow('thresh', thresh)
     # Invert the thresh
     thresh_inv = cv.bitwise_not(thresh)
+    cv.imshow('thresh_inv', thresh_inv)
     # Bitwise and with the image mask thresh
     res = cv.bitwise_and(image, image, mask = thresh)
+    cv.imshow('res', res)
     # Bitwise and the image with mask as threshold invert
     res3 = cv.bitwise_and(image, image, mask = thresh_inv)
+    cv.imshow('res3', res3)
     # Take the weighted average
     res4 = cv.addWeighted(res, 1, res3, 1, 0)
+    cv.imshow('res4', res4)
     # Draw the contours on the image with green color and pixel width is 1
     final = cv.drawContours(res4, contours, -1, (0, 255, 0), 1)
     
@@ -114,6 +143,8 @@ if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
     #canny_watershed('四破魚(藍圓鰺)2.jpg', 0, 100, 3)
+    #canny_watershed('8ubS9.jpg', 'output.jpg', 0, 100, 3)
+    
     with open('file_lists.txt', 'r') as f:
         for line in f:
             params = []
@@ -124,4 +155,5 @@ if __name__ == "__main__":
             canny_watershed(params[0], outputfile, float(params[1]), int(params[2]), int(params[3]))
             #filename = os.path.splitext(params[0])[0]
             #print(filename)
+    
     print("end")
