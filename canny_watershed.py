@@ -43,7 +43,7 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # Finding the contors in the image using chain approximation
     new, contours, hierarchy = cv.findContours(canny, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
-    
+    '''
     # Create the marker image for watershed algorithm
     markers = np.zeros(canny.shape, dtype = np.int32)
     
@@ -57,14 +57,14 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 
     # Apply watershed algorithm
     cv.watershed(image, markers)
-    
+    '''
 
     '''
     mark = markers.astype('uint8')
     mark = cv.bitwise_not(mark)
     cv.imshow('marker v2', mark)
     '''
-    
+    '''
     # Apply thresholding on the image to convert to binary image
     m = cv.convertScaleAbs(markers)
     ret, thresh = cv.threshold(m, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
@@ -105,8 +105,8 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 
     # Display the final result
     cv.imshow('final result', dst)
-    
     '''
+    
     # converting the marker to float 32 bit
     marker32 = np.int32(marker)
     # Apply watershed algorithm
@@ -129,10 +129,28 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     cv.imshow('res4', res4)
     # Draw the contours on the image with green color and pixel width is 1
     final = cv.drawContours(res4, contours, -1, (0, 255, 0), 1)
+    #for i in range(len(contours)):
+    #    cv.drawContours(res4, contours, i, (i + 1), -1)
     
 
     # Display the image
-    cv.imshow("Watershed", final) 
+    #cv.imshow("Watershed", final) 
+    cv.imshow("Watershed", res4)
+    '''
+    colors = []
+    for contour in contours:
+        colors.append((rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256)))
+
+    # Create the result image
+    dst = np.zeros((marker32.shape[0], marker32.shape[1], 3), dtype=np.uint8)
+
+    # Fill labeled objects with random color
+    for i in range(marker32.shape[0]):
+        for j in range(marker32.shape[1]):
+            index = marker32[i,j]
+            if index > 0 and index <= len(contours):
+                dst[i,j,:] = colors[index-1]
+    cv.imshow('final', dst)
     '''
     # Save the output image
     #cv.imwrite(outputfile, final)
@@ -142,9 +160,9 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
-    #canny_watershed('四破魚(藍圓鰺)2.jpg', 0, 100, 3)
-    #canny_watershed('8ubS9.jpg', 'output.jpg', 0, 100, 3)
-    
+    #canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
+    canny_watershed('coins.jpg', 'output.jpg', 0, 100, 3)
+    '''
     with open('file_lists.txt', 'r') as f:
         for line in f:
             params = []
@@ -155,5 +173,5 @@ if __name__ == "__main__":
             canny_watershed(params[0], outputfile, float(params[1]), int(params[2]), int(params[3]))
             #filename = os.path.splitext(params[0])[0]
             #print(filename)
-    
+    '''
     print("end")
