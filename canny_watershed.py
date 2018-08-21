@@ -14,10 +14,41 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     cv.imshow('Original image', image)
 
     '''
+    part of mean shift
+    '''
+    # convert image from unsigned 8 bit to 32 bit float
+    image_float = np.float32(image)
+
+    # define the criteria(type, max_iter, epsilon)
+    # cv2.TERM_CRITERIA_EPS - stop the algorithm iteration if specified accuracy, epsilon, is reached.
+    # cv2.TERM_CRITERIA_MAX_ITER - stop the algorithm after the specified number of iterations, max_iter.
+    # cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER - stop the iteration when any of the above condition is met.
+    # max_iter - An integer specifying maximum number of iterations.In this case it is 10
+    # epsilon - Required accuracy.In this case it is 1
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1)
+
+    k = 50 # number of clusters
+    #apply K-means algorithm with random centers approach
+    ret, label, centers = cv.kmeans(image_float, k, None, criteria, 50, cv.KMEANS_RANDOM_CENTERS)
+
+    # convert the image from 32 bit float to unsigned 8 bit
+    center = np.uint8(centers)
+    # this will flatten the label
+    res = center[label.flatten()]
+    # reshape the image
+    res2 = res.reshape(image.shape)
+    cv.imshow('K means', res2)
+
+    # apply meanshift algorithm on to image
+    meanshift = cv.pyrMeanShiftFiltering(image, sp = 8, sr = 16, maxLevel = 1, termcrit = (cv.TERM_CRITERIA_EPS+ cv.TERM_CRITERIA_MAX_ITER, 5, 1))
+    cv.imshow('mean shift', meanshift)
+
+    '''
     part of misc
     '''
     # change image from BGR to grayscale
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    #gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(meanshift, cv.COLOR_BGR2GRAY)
     # apply thresholding to convert the image to binary
     ret, thresh = cv.threshold(gray, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     # erode the image
@@ -43,7 +74,7 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # Finding the contors in the image using chain approximation
     new, contours, hierarchy = cv.findContours(canny, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
-    '''
+    
     # Create the marker image for watershed algorithm
     markers = np.zeros(canny.shape, dtype = np.int32)
     
@@ -57,14 +88,14 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 
     # Apply watershed algorithm
     cv.watershed(image, markers)
-    '''
+    
 
     '''
     mark = markers.astype('uint8')
     mark = cv.bitwise_not(mark)
     cv.imshow('marker v2', mark)
     '''
-    '''
+    
     # Apply thresholding on the image to convert to binary image
     m = cv.convertScaleAbs(markers)
     ret, thresh = cv.threshold(m, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
@@ -105,8 +136,8 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 
     # Display the final result
     cv.imshow('final result', dst)
-    '''
     
+    '''
     # converting the marker to float 32 bit
     marker32 = np.int32(marker)
     # Apply watershed algorithm
@@ -136,6 +167,7 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # Display the image
     #cv.imshow("Watershed", final) 
     cv.imshow("Watershed", res4)
+    '''
     '''
     colors = []
     for contour in contours:
