@@ -186,11 +186,12 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
 def canny_watershed_distance_transform(inputfile, outputfile, sigma, min_edge, ratio):
     # read image -> convert to grayscale -> apply Otus thresholding
     img = cv.imread(inputfile)
+    '''
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     ret, thresh = cv.threshold(gray, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     cv.imshow('otsu', thresh)
-    
-
+    '''
+    '''
     # noise removal (using Canny)
     gaussian = cv.GaussianBlur(thresh, (5, 5), sigma, sigma)
     canny = cv.Canny(gaussian, min_edge, min_edge * ratio, 3, L2gradient = True)
@@ -207,11 +208,38 @@ def canny_watershed_distance_transform(inputfile, outputfile, sigma, min_edge, r
 
     cv.imshow('canny', canny)
     cv.imshow('new sharpen image', imgResult)
+    '''
+
+    # Create a kernel that we will use to sharpen our image
+    # an approximation of second derivative, a quite strong kernel
+    kernel = np.array([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype=np.float32)
+    # do the laplacian filtering as it is
+    # well, we need to convert everything in something more deeper then CV_8U
+    # because the kernel has some negative values,
+    # and we can expect in general to have a Laplacian image with negative values
+    # BUT a 8bits unsigned int (the one we are working with) can contain values from 0 to 255
+    # so the possible negative number will be truncated
+    imgLaplacian = cv.filter2D(img, cv.CV_32F, kernel)
+    sharp = np.float32(img)
+    imgResult = sharp - imgLaplacian
+    # convert back to 8bits gray scale
+    imgResult = np.clip(imgResult, 0, 255)
+    imgResult = imgResult.astype('uint8')
+    imgLaplacian = np.clip(imgLaplacian, 0, 255)
+    imgLaplacian = np.uint8(imgLaplacian)
+    #cv.imshow('Laplace Filtered Image', imgLaplacian)
+    cv.imshow('New Sharped Image', imgResult)
+
+    # Create binary image from source image
+    bw = cv.cvtColor(imgResult, cv.COLOR_BGR2GRAY)
+    _, bw = cv.threshold(bw, 40, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
+    cv.imshow('Binary Image', bw)
 
     # need Otsu thresholding again?
 
     # apply distance transform
-    dist = cv.distanceTransform(canny, cv.DIST_L2, 3)
+    #dist = cv.distanceTransform(canny, cv.DIST_L2, 3)
+    dist = cv.distanceTransform(bw, cv.DIST_L2, 3)
     #print(canny.dtype)
     #print(dist.dtype)
     
