@@ -61,15 +61,6 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     marker = cv.add(foreground, background)
 
     '''
-    part of canny
-    '''
-    '''
-    # apply (Gaussian) filter for canny edge detector preprocessing
-    gaussian = cv.GaussianBlur(marker, (5, 5), sigma, sigma)
-    # apply canny edge detection
-    canny = cv.Canny(gaussian, min_edge, min_edge * ratio, 3, L2gradient = True)
-    '''
-    '''
     part of watershed
     '''
     # Finding the contors in the image using chain approximation
@@ -198,18 +189,91 @@ def canny_watershed_distance_transform(inputfile, outputfile, sigma, min_edge, r
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     ret, thresh = cv.threshold(gray, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     cv.imshow('otsu', thresh)
+    
 
     # noise removal (using Canny)
+    gaussian = cv.GaussianBlur(thresh, (5, 5), sigma, sigma)
+    canny = cv.Canny(gaussian, min_edge, min_edge * ratio, 3, L2gradient = True)
+
+    # sharpen the image
+    mask = canny != 0
+    imgResult = img * (mask[:,:,None].astype(img.dtype))
+    #sharp = np.uint8(img)
+    #imgResult = sharp - canny
+
+    # convert back to 8bits gray scale
+    #imgResult = np.clip(imgResult, 0, 255)
+    #imgResult = imgResult.astype('uint8')
+
+    cv.imshow('canny', canny)
+    cv.imshow('new sharpen image', imgResult)
+
+    # need Otsu thresholding again?
+
+    # apply distance transform
+    dist = cv.distanceTransform(canny, cv.DIST_L2, 3)
+    #print(canny.dtype)
+    #print(dist.dtype)
     
+    # normalize the distance image for range {0.0, 1.0}
+    cv.normalize(dist, dist, 0, 1.0, cv.NORM_MINMAX)
+    cv.imshow('distance transform image', dist)
+
+    # Threshold to obtain the peaks
+    # This will be the markers for the foreground objects
+    ret, dist = cv.threshold(dist, 0.4, 1.0, cv.THRESH_BINARY)
+
+    # Dilate a bit the dist image
+    kernel1 = np.ones((3,3), dtype=np.uint8)
+    dist = cv.dilate(dist, kernel1)
+    cv.imshow('Peaks', dist)
+
+    # Create the CV_8U version of the distance image
+    # It is needed for findContours()
+    dist_8u = dist.astype('uint8')
+    # Find total markers
+    ret, contours, _ = cv.findContours(dist_8u, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    # Create the marker image for the watershed algorithm
+    markers = np.zeros(dist.shape, dtype=np.int32)
+    # Draw the foreground markers
+    for i in range(len(contours)):
+        cv.drawContours(markers, contours, i, (i+1), -1)
+    # Draw the background marker
+    cv.circle(markers, (5,5), 3, (255,255,255), -1)
+    cv.imshow('Markers', markers*10000)
+
+    # Perform the watershed algorithm
+    cv.watershed(imgResult, markers)
+    #mark = np.zeros(markers.shape, dtype=np.uint8)
+    mark = markers.astype('uint8')
+    mark = cv.bitwise_not(mark)
+    # uncomment this if you want to see how the mark
+    # image looks like at that point
+    cv.imshow('Markers_v2', mark)
+    # Generate random colors
+    colors = []
+    for contour in contours:
+        colors.append((rng.randint(0,256), rng.randint(0,256), rng.randint(0,256)))
+    # Create the result image
+    dst = np.zeros((markers.shape[0], markers.shape[1], 3), dtype=np.uint8)
+    # Fill labeled objects with random colors
+    for i in range(markers.shape[0]):
+        for j in range(markers.shape[1]):
+            index = markers[i,j]
+            if index > 0 and index <= len(contours):
+                dst[i,j,:] = colors[index-1]
+    # Visualize the final image
+    cv.imshow('Final Result', dst)
 
     cv.waitKey()
 
 if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
-    canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
+    #canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
     #canny_watershed('coins.jpg', 'output.jpg', 0, 100, 3)
-    #canny_watershed_distance_transform('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
+    canny_watershed_distance_transform('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
+    #canny_watershed('七星鱸.JPG', 'output.jpg', 0, 100, 3)
     '''
     with open('file_lists.txt', 'r') as f:
         for line in f:
