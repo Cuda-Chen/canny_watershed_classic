@@ -63,20 +63,23 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     '''
     part of canny
     '''
+    '''
     # apply (Gaussian) filter for canny edge detector preprocessing
     gaussian = cv.GaussianBlur(marker, (5, 5), sigma, sigma)
     # apply canny edge detection
     canny = cv.Canny(gaussian, min_edge, min_edge * ratio, 3, L2gradient = True)
-
+    '''
     '''
     part of watershed
     '''
     # Finding the contors in the image using chain approximation
-    new, contours, hierarchy = cv.findContours(canny, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    #new, contours, hierarchy = cv.findContours(canny, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    new, contours, hierarchy = cv.findContours(marker, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
     
     # Create the marker image for watershed algorithm
-    markers = np.zeros(canny.shape, dtype = np.int32)
+    #markers = np.zeros(canny.shape, dtype = np.int32)
+    markers = np.zeros(marker.shape, dtype = np.int32)
     
     # Draw the foreground markers
     for i in range(len(contours)):
@@ -189,11 +192,24 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # Wait for key stroke
     cv.waitKey()
 
+def canny_watershed_distance_transform(inputfile, outputfile, sigma, min_edge, ratio):
+    # read image -> convert to grayscale -> apply Otus thresholding
+    img = cv.imread(inputfile)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    ret, thresh = cv.threshold(gray, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    cv.imshow('otsu', thresh)
+
+    # noise removal (using Canny)
+    
+
+    cv.waitKey()
+
 if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
-    #canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
-    canny_watershed('coins.jpg', 'output.jpg', 0, 100, 3)
+    canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
+    #canny_watershed('coins.jpg', 'output.jpg', 0, 100, 3)
+    #canny_watershed_distance_transform('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
     '''
     with open('file_lists.txt', 'r') as f:
         for line in f:
