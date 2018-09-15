@@ -4,7 +4,7 @@ import numpy as np
 import os
 import random as rng
 
-def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
+def mean_shift(inputfile, outputfile, sigma, min_edge, ratio):
     rng.seed(12345)
 
     # first, read the image
@@ -17,7 +17,7 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     part of mean shift
     '''
     # convert image from unsigned 8 bit to 32 bit float
-    image_float = np.float32(image)
+    #image_float = np.float32(image)
 
     # define the criteria(type, max_iter, epsilon)
     # cv2.TERM_CRITERIA_EPS - stop the algorithm iteration if specified accuracy, epsilon, is reached.
@@ -25,19 +25,19 @@ def canny_watershed(inputfile, outputfile, sigma, min_edge, ratio):
     # cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER - stop the iteration when any of the above condition is met.
     # max_iter - An integer specifying maximum number of iterations.In this case it is 10
     # epsilon - Required accuracy.In this case it is 1
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1)
+    #criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1)
 
-    k = 50 # number of clusters
+    #k = 50 # number of clusters
     #apply K-means algorithm with random centers approach
-    ret, label, centers = cv.kmeans(image_float, k, None, criteria, 50, cv.KMEANS_RANDOM_CENTERS)
+    #ret, label, centers = cv.kmeans(image_float, k, None, criteria, 50, cv.KMEANS_RANDOM_CENTERS)
 
     # convert the image from 32 bit float to unsigned 8 bit
-    center = np.uint8(centers)
+    #center = np.uint8(centers)
     # this will flatten the label
-    res = center[label.flatten()]
+    #res = center[label.flatten()]
     # reshape the image
-    res2 = res.reshape(image.shape)
-    cv.imshow('K means', res2)
+    #res2 = res.reshape(image.shape)
+    #cv.imshow('K means', res2)
 
     # apply meanshift algorithm on to image
     meanshift = cv.pyrMeanShiftFiltering(image, sp = 8, sr = 16, maxLevel = 1, termcrit = (cv.TERM_CRITERIA_EPS+ cv.TERM_CRITERIA_MAX_ITER, 5, 1))
@@ -299,8 +299,8 @@ if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
     #canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
-    #canny_watershed('coins.jpg', 'output.jpg', 0, 100, 3)
-    canny_watershed_distance_transform('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
+    mean_shift('coins.jpg', 'output.jpg', 0, 100, 3)
+    #canny_watershed_distance_transform('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
     #canny_watershed('七星鱸.JPG', 'output.jpg', 0, 100, 3)
     '''
     with open('file_lists.txt', 'r') as f:
