@@ -111,6 +111,7 @@ result_image/
 
 # just track certain images
 *.jpg
+*.png
 !coins.jpg
 !四破魚(藍圓鰺)2.jpg
 !8ubS9.jpg

@@ -6,7 +6,13 @@ from skimage.segmentation import mark_boundaries
 from skimage.util import img_as_float
 from skimage import io
 
-image = img_as_float(io.imread('coins.jpg'))
+import os
+
+inputfile = 'coins.jpg'
+output_slic = os.path.splitext(inputfile)[0] + '_slic' + '.png'
+output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift' + '.png'
+
+image = img_as_float(io.imread(inputfile))
 
 segments_slic = slic(image, n_segments = 100, sigma = 5)
 segments_quickshift = quickshift(image, kernel_size = 5, max_dist = 6, ratio = 0.5)
@@ -26,3 +32,6 @@ for a in ax.ravel():
 
 plt.tight_layout()
 plt.show()
+
+plt.imsave(output_slic, slic_result)
+plt.imsave(output_quickshift, quickshift_result)
