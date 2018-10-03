@@ -9,8 +9,8 @@ from skimage import io
 import os
 
 inputfile = 'coins.jpg'
-output_slic = os.path.splitext(inputfile)[0] + '_slic' + '.png'
-output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift' + '.png'
+output_slic = os.path.splitext(inputfile)[0] + '_slic' + '.bmp'
+output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift' + '.bmp'
 
 image = img_as_float(io.imread(inputfile))
 
@@ -33,5 +33,8 @@ for a in ax.ravel():
 plt.tight_layout()
 plt.show()
 
-plt.imsave(output_slic, slic_result)
-plt.imsave(output_quickshift, quickshift_result)
+#plt.imsave(output_slic, slic_result)
+#plt.imsave(output_quickshift, quickshift_result)
+
+io.imsave(output_slic, slic_result)
+io.imsave(output_quickshift, quickshift_result)
