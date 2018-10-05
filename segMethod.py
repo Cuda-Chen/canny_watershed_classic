@@ -114,10 +114,15 @@ if __name__ == "__main__":
     quick_shift_max_dist = 10
 
     inputfile = 'coins.jpg'
-    output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift' + '.bmp'
-    output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb' + '.bmp'
-    output_slic = os.path.splitext(inputfile)[0] + '_slic' + '.bmp'
-    output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift' + '.bmp'
+    output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(meanshift_sp) + '_' + str(meanshift_sr) + '.bmp'
+    output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb_' + str(fz_min_size) + '.bmp'
+    output_slic = os.path.splitext(inputfile)[0] + '_slic_' + str(SLIC_n_segments) + '.bmp'
+    output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift_' + str(quick_shift_max_dist) + '.bmp'
+
+    print(output_meanshift)
+    print(output_felzenszwalb)
+    print(output_slic)
+    print(output_quickshift)
 
     meanshift_result = mean_shift(inputfile, sp = meanshift_sp, sr = meanshift_sr)
 
@@ -147,4 +152,8 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.show()
-
+    
+    io.imsave(output_meanshift, meanshift_result)
+    io.imsave(output_felzenszwalb, felzenszwalb_result)
+    io.imsave(output_slic, slic_result)
+    io.imsave(output_quickshift, quickshift_result)
