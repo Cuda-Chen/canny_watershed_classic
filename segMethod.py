@@ -99,6 +99,7 @@ def mean_shift(inputfile, sp, sr):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('input_file', type=str, help='input image path')
     parser.add_argument('meanshift_sp', type=int, help='mean shift sp')
     parser.add_argument('meanshift_sr', type=int, help='mean shift sr')
     parser.add_argument('fz_min_size', type=int, help='felzenswalb segment min size')
@@ -106,25 +107,12 @@ if __name__ == "__main__":
     parser.add_argument('quick_shift_max_dist', type=int, help='quickshift max iter')
     args = parser.parse_args()
 
-    #print(args.meanshift_sp)
-
     print("hello")
 
-    # mean shift
-    #meanshift_sp = 10
-    #meanshift_sr = 10
-
+    inputfile = args.input_file
     superpixel_sigma = 0.5
     superpixel_color = (1, 0, 0)
 
-    # felzenswalb
-    #fz_min_size = 50
-    # SLIC
-    #SLIC_n_segments = 50
-    # quickshift
-    #quick_shift_max_dist = 10
-
-    inputfile = 'coins.jpg'
     output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(args.meanshift_sp) + '_' + str(args.meanshift_sr) + '.bmp'
     output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb_' + str(args.fz_min_size) + '.bmp'
     output_slic = os.path.splitext(inputfile)[0] + '_slic_' + str(args.SLIC_n_segments) + '.bmp'
@@ -164,7 +152,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.show()
     
-    #io.imsave(output_meanshift, meanshift_result)
-    #io.imsave(output_felzenszwalb, felzenszwalb_result)
-    #io.imsave(output_slic, slic_result)
-    #io.imsave(output_quickshift, quickshift_result)
+    io.imsave(output_meanshift, meanshift_result)
+    io.imsave(output_felzenszwalb, felzenszwalb_result)
+    io.imsave(output_slic, slic_result)
+    io.imsave(output_quickshift, quickshift_result)
