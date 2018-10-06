@@ -3,6 +3,7 @@ import numpy as np
 import os
 import cv2 as cv
 import random as rng
+import argparse
 
 from skimage.segmentation import felzenszwalb, slic, quickshift
 from skimage.segmentation import mark_boundaries
@@ -15,7 +16,7 @@ def mean_shift(inputfile, sp, sr):
     image = cv.imread(inputfile)
 
     ''' part of mean shift'''
-    meanshift = cv.pyrMeanShiftFiltering(image, sp, sr, maxLevel = 1, termcrit = (cv.TERM_CRITERIA_EPS+ cv.TERM_CRITERIA_MAX_ITER, 5, 1))
+    meanshift = cv.pyrMeanShiftFiltering(image, sp, sr, maxLevel=1, termcrit=(cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 5, 1))
 
     '''
     part of misc
@@ -26,9 +27,9 @@ def mean_shift(inputfile, sp, sr):
     # apply thresholding to convert the image to binary
     ret, thresh = cv.threshold(gray, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     # erode the image
-    foreground = cv.erode(thresh, None, iterations = 1)
+    foreground = cv.erode(thresh, None, iterations=1)
     # Dilate the image
-    backgroundTemp = cv.dilate(thresh, None, iterations = 1)
+    backgroundTemp = cv.dilate(thresh, None, iterations=1)
     # Apply thresholding
     ret, background = cv.threshold(backgroundTemp, 1, 128, 1)
     # Add foreground and background
@@ -44,7 +45,7 @@ def mean_shift(inputfile, sp, sr):
 
     # Create the marker image for watershed algorithm
     #markers = np.zeros(canny.shape, dtype = np.int32)
-    markers = np.zeros(marker.shape, dtype = np.int32)
+    markers = np.zeros(marker.shape, dtype=np.int32)
 
     # Draw the foreground markers
     for i in range(len(contours)):
@@ -67,11 +68,11 @@ def mean_shift(inputfile, sp, sr):
     #cv.imshow('thresh_inv', thresh_inv)
 
     # Bitwise and with the image mask thresh
-    res = cv.bitwise_and(image, image, mask = thresh)
+    res = cv.bitwise_and(image, image, mask=thresh)
     #cv.imshow('res', res)
 
     # Bitwise and the image with mask as threshold invert
-    res3 = cv.bitwise_and(image, image, mask = thresh_inv)
+    res3 = cv.bitwise_and(image, image, mask=thresh_inv)
     #cv.imshow('res3', res3)
     # Take the weighted average
     res4 = cv.addWeighted(res, 1, res3, 1, 0)
@@ -97,46 +98,56 @@ def mean_shift(inputfile, sp, sr):
     return dst
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('meanshift_sp', type=int, help='mean shift sp')
+    parser.add_argument('meanshift_sr', type=int, help='mean shift sr')
+    parser.add_argument('fz_min_size', type=int, help='felzenswalb segment min size')
+    parser.add_argument('SLIC_n_segments', type=int, help='SLIC minimum number of segment')
+    parser.add_argument('quick_shift_max_dist', type=int, help='quickshift max iter')
+    args = parser.parse_args()
+
+    #print(args.meanshift_sp)
+
     print("hello")
 
     # mean shift
-    meanshift_sp = 10
-    meanshift_sr = 10
+    #meanshift_sp = 10
+    #meanshift_sr = 10
 
     superpixel_sigma = 0.5
     superpixel_color = (1, 0, 0)
 
     # felzenswalb
-    fz_min_size = 50
+    #fz_min_size = 50
     # SLIC
-    SLIC_n_segments = 50
+    #SLIC_n_segments = 50
     # quickshift
-    quick_shift_max_dist = 10
+    #quick_shift_max_dist = 10
 
     inputfile = 'coins.jpg'
-    output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(meanshift_sp) + '_' + str(meanshift_sr) + '.bmp'
-    output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb_' + str(fz_min_size) + '.bmp'
-    output_slic = os.path.splitext(inputfile)[0] + '_slic_' + str(SLIC_n_segments) + '.bmp'
-    output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift_' + str(quick_shift_max_dist) + '.bmp'
+    output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(args.meanshift_sp) + '_' + str(args.meanshift_sr) + '.bmp'
+    output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb_' + str(args.fz_min_size) + '.bmp'
+    output_slic = os.path.splitext(inputfile)[0] + '_slic_' + str(args.SLIC_n_segments) + '.bmp'
+    output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift_' + str(args.quick_shift_max_dist) + '.bmp'
 
     print(output_meanshift)
     print(output_felzenszwalb)
     print(output_slic)
     print(output_quickshift)
 
-    meanshift_result = mean_shift(inputfile, sp = meanshift_sp, sr = meanshift_sr)
+    meanshift_result = mean_shift(inputfile, sp=args.meanshift_sp, sr=args.meanshift_sr)
 
     image = img_as_float(io.imread(inputfile))
 
-    segment_felzenszwalb = felzenszwalb(image, sigma = superpixel_sigma, min_size = fz_min_size)
-    segment_slic = slic(image, sigma = superpixel_sigma, n_segments = SLIC_n_segments)
-    segment_quickshift = quickshift(image, kernel_size = 5, max_dist = quick_shift_max_dist, ratio = 0.5)
+    segment_felzenszwalb = felzenszwalb(image, sigma=superpixel_sigma, min_size=args.fz_min_size)
+    segment_slic = slic(image, sigma=superpixel_sigma, n_segments=args.SLIC_n_segments)
+    segment_quickshift = quickshift(image, kernel_size=5, max_dist=args.quick_shift_max_dist, ratio=0.5)
 
-    felzenszwalb_result = mark_boundaries(image, segment_felzenszwalb, color = superpixel_color)
-    slic_result = mark_boundaries(image, segment_slic, color = superpixel_color)
-    quickshift_result = mark_boundaries(image, segment_quickshift, color = superpixel_color)
+    felzenszwalb_result = mark_boundaries(image, segment_felzenszwalb, color=superpixel_color)
+    slic_result = mark_boundaries(image, segment_slic, color=superpixel_color)
+    quickshift_result = mark_boundaries(image, segment_quickshift, color=superpixel_color)
 
-    fig, ax = plt.subplots(2, 2, figsize = (20, 10), sharex = True, sharey = True)
+    fig, ax = plt.subplots(2, 2, figsize=(20, 10), sharex=True, sharey=True)
 
     ax[0, 0].imshow(meanshift_result)
     ax[0, 0].set_title('mean shift')
@@ -153,7 +164,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.show()
     
-    io.imsave(output_meanshift, meanshift_result)
-    io.imsave(output_felzenszwalb, felzenszwalb_result)
-    io.imsave(output_slic, slic_result)
-    io.imsave(output_quickshift, quickshift_result)
+    #io.imsave(output_meanshift, meanshift_result)
+    #io.imsave(output_felzenszwalb, felzenszwalb_result)
+    #io.imsave(output_slic, slic_result)
+    #io.imsave(output_quickshift, quickshift_result)
