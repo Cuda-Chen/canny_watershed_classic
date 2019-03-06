@@ -80,6 +80,7 @@ def mean_shift(inputfile, sp, sr):
     res4 = cv.addWeighted(res, 1, res3, 1, 0)
     #cv.imshow('marker v2', res4)
 
+    '''
     # Generate random color
     colors = []
     for contour in contours:
@@ -96,8 +97,13 @@ def mean_shift(inputfile, sp, sr):
                 dst[i,j,:] = colors[index-1]
             #else:
             #    dst[i, j, :] = (0, 0, 0)
+    '''
 
-    return dst
+    # draw the contours on the image with green color and pixel width is 1
+    final = cv.drawContours(res4, contours, -1, (255, 0, 0), 1)
+
+    #return dst
+    return final
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
