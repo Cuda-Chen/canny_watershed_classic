@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import os
 import cv2 as cv
@@ -99,8 +99,11 @@ def mean_shift(inputfile, sp, sr):
             #    dst[i, j, :] = (0, 0, 0)
     '''
 
-    # draw the contours on the image with green color and pixel width is 1
+    # draw the contours on the image with red color and pixel width is 1
     final = cv.drawContours(res4, contours, -1, (255, 0, 0), 1)
+
+    #cv.imshow('edge map', contours)
+    #cv.waitKey(0)
 
     #return dst
     return final
