@@ -299,7 +299,8 @@ if __name__ == "__main__":
     print("Hello world")
     #canny_watershed(1, 1, 1, 1)
     #canny_watershed('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
-    mean_shift('coins.jpg', 'output.jpg', 0, 100, 3)
+    #mean_shift('coins.jpg', 'output.jpg', 0, 100, 3)
+    canny_watershed_distance_transform('coins.jpg', 'output.jpg', 0, 100, 3)
     #canny_watershed_distance_transform('四破魚(藍圓鰺)2.jpg', 'output.jpg', 0, 100, 3)
     #canny_watershed('七星鱸.JPG', 'output.jpg', 0, 100, 3)
     '''
