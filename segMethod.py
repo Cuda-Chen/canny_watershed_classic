@@ -16,8 +16,14 @@ def mean_shift(inputfile, sp, sr):
     rng.seed(12345)
 
     image = cv.imread(inputfile)
+    print(image.shape)
+    print(image.dtype)
 
-    ''' part of mean shift'''
+    '''create mask image'''
+    mask_image = np.zeros(image.shape, dtype=np.uint8)
+    
+
+    '''part of mean shift'''
     meanshift = cv.pyrMeanShiftFiltering(image, sp, sr, maxLevel=1, termcrit=(cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 5, 1))
 
     '''
@@ -100,7 +106,8 @@ def mean_shift(inputfile, sp, sr):
     '''
 
     # draw the contours on the image with red color and pixel width is 1
-    final = cv.drawContours(res4, contours, -1, (255, 0, 0), 1)
+    #final = cv.drawContours(res4, contours, -1, (255, 0, 0), 1)
+    final = cv.drawContours(mask_image, contours, -1, (255, 0, 0), 1)
     #print("the shape of contours is ", contours.shape)
     #print("the dtype of contours is ", contours.dtype)
 
@@ -145,6 +152,7 @@ if __name__ == "__main__":
     print("Mean shift cost %f sec" % (tEnd - tStart))
 
     image = img_as_float(io.imread(inputfile))
+    mask_img = np.zeros(image.shape, dtype=np.uint8)
 
     # felzenszwalb
     tStart = time.time()
@@ -170,9 +178,9 @@ if __name__ == "__main__":
     tEnd = time.time()
     print("quickshift cost %f sec" % (tEnd - tStart))
 
-    felzenszwalb_result = mark_boundaries(image, segment_felzenszwalb, color=superpixel_color)
-    slic_result = mark_boundaries(image, segment_slic, color=superpixel_color)
-    quickshift_result = mark_boundaries(image, segment_quickshift, color=superpixel_color)
+    felzenszwalb_result = mark_boundaries(mask_img, segment_felzenszwalb, color=superpixel_color)
+    slic_result = mark_boundaries(mask_img, segment_slic, color=superpixel_color)
+    quickshift_result = mark_boundaries(mask_img, segment_quickshift, color=superpixel_color)
     print("the shape of felzenszwalb_result is ", felzenszwalb_result.shape)
     print("the dtype of felzenszwalb_result is ", felzenszwalb_result.dtype)
     print("the shape of slic_result is ", slic_result.shape)
@@ -198,9 +206,9 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.show()
     '''
-    '''
+    
     io.imsave(output_meanshift, meanshift_result)
     io.imsave(output_felzenszwalb, felzenszwalb_result)
     io.imsave(output_slic, slic_result)
     io.imsave(output_quickshift, quickshift_result)
-    '''
+    
