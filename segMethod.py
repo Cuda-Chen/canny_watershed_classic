@@ -137,6 +137,7 @@ if __name__ == "__main__":
     output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb_' + str(args.fz_min_size) + '.bmp'
     output_slic = os.path.splitext(inputfile)[0] + '_slic_' + str(args.SLIC_n_segments) + '.bmp'
     output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift_' + str(args.quick_shift_max_dist) + '.bmp'
+    output_result = os.path.splitext(inputfile)[0] + '_result' + '.bmp'
 
     print(output_meanshift)
     print(output_felzenszwalb)
@@ -151,10 +152,10 @@ if __name__ == "__main__":
     tEnd = time.time()
     print("Mean shift cost %f sec" % (tEnd - tStart))
 
-    #image = img_as_float(io.imread(inputfile))
-    image = io.imread(inputfile)
-    mask_img = np.zeros(image.shape, dtype=np.uint8)
-    #mask_img = np.zeros(image.shape, dtype=float)
+    image = img_as_float(io.imread(inputfile))
+    #image = io.imread(inputfile)
+    #mask_img = np.zeros(image.shape, dtype=np.uint8)
+    mask_img = np.zeros(image.shape, dtype=float)
 
     # felzenszwalb
     tStart = time.time()
@@ -208,19 +209,21 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.show()
     '''
-    '''
-    io.imsave(output_meanshift, meanshift_result)
+    
+    meanshift_result_temp = meanshift_result.astype(np.uint8)
+    #cv.imwrite(output_meanshift, meanshift_result)
+    io.imsave(output_meanshift, meanshift_result_temp)
     io.imsave(output_felzenszwalb, felzenszwalb_result)
     io.imsave(output_slic, slic_result)
     io.imsave(output_quickshift, quickshift_result)
-    '''
     
-    cv.imshow("mean shift", meanshift_result)
-    cv.imshow("felzenszwalb", felzenszwalb_result)
-    cv.imshow("slic", slic_result)
-    cv.imshow("quick shift", quickshift_result)
-    cv.waitKey(0)
-   
+    
+    #cv.imshow("mean shift", meanshift_result)
+    #cv.imshow("felzenszwalb", felzenszwalb_result)
+    #cv.imshow("slic", slic_result)
+    #cv.imshow("quick shift", quickshift_result)
+    #cv.waitKey(0)
+    
     temp_or = cv.bitwise_or(meanshift_result, felzenszwalb_result) 
     temp_or = cv.bitwise_or(temp_or, slic_result)
     temp_or = cv.bitwise_or(temp_or, quickshift_result)
@@ -236,13 +239,15 @@ if __name__ == "__main__":
     mask_inv = cv.bitwise_not(mask)
     temp = cv.bitwise_and(temp_or, temp_or, mask=mask_inv)
     #temp = cv.bitwise_and(image, temp)
-    cv.imshow("temp or result", temp_or)
-    cv.imshow("temp xor result", temp_xor)
-    cv.imshow("temp and result", temp_and)
-    cv.imshow("temp xor 8bit", temp_xor8)
-    cv.imshow("temp gray", img2gray)
-    cv.imshow("mask", mask)
-    cv.imshow("mask inv", mask_inv)
-    cv.imshow("temp result", temp)
-    cv.waitKey(0)
+    #cv.imshow("temp or result", temp_or)
+    #cv.imshow("temp xor result", temp_xor)
+    #cv.imshow("temp and result", temp_and)
+    #cv.imshow("temp xor 8bit", temp_xor8)
+    #cv.imshow("temp gray", img2gray)
+    #cv.imshow("mask", mask)
+    #cv.imshow("mask inv", mask_inv)
+    #cv.imshow("temp result", temp)
+    #cv.waitKey(0)
     
+    #cv.imwrite(output_result, temp)
+    io.imsave(output_result, temp)
