@@ -20,7 +20,7 @@ def mean_shift(inputfile, sp, sr):
     print(image.dtype)
 
     '''create mask image'''
-    mask_image = np.zeros(image.shape, dtype=np.uint8)
+    mask_image = np.zeros(image.shape, dtype=float)
     
 
     '''part of mean shift'''
@@ -154,6 +154,7 @@ if __name__ == "__main__":
     #image = img_as_float(io.imread(inputfile))
     image = io.imread(inputfile)
     mask_img = np.zeros(image.shape, dtype=np.uint8)
+    #mask_img = np.zeros(image.shape, dtype=float)
 
     # felzenszwalb
     tStart = time.time()
@@ -213,25 +214,35 @@ if __name__ == "__main__":
     io.imsave(output_slic, slic_result)
     io.imsave(output_quickshift, quickshift_result)
     '''
-    '''
+    
     cv.imshow("mean shift", meanshift_result)
     cv.imshow("felzenszwalb", felzenszwalb_result)
     cv.imshow("slic", slic_result)
     cv.imshow("quick shift", quickshift_result)
     cv.waitKey(0)
-    '''
-    temp_or = cv.bitwise_or(felzenszwalb_result, slic_result)
+   
+    temp_or = cv.bitwise_or(meanshift_result, felzenszwalb_result) 
+    temp_or = cv.bitwise_or(temp_or, slic_result)
+    temp_or = cv.bitwise_or(temp_or, quickshift_result)
+    temp_xor = cv.bitwise_xor(meanshift_result, felzenszwalb_result) 
     temp_xor = cv.bitwise_xor(felzenszwalb_result, slic_result)
+    temp_xor = cv.bitwise_xor(temp_xor, quickshift_result)
     temp_and = cv.bitwise_and(felzenszwalb_result, slic_result)
 
     temp_xor8 = temp_xor.astype(np.uint8)
+    temp_xor8 = temp_xor8 * 255
     img2gray = cv.cvtColor(temp_xor8, cv.COLOR_BGR2GRAY)
     ret, mask = cv.threshold(img2gray, 10, 255, cv.THRESH_BINARY)
     mask_inv = cv.bitwise_not(mask)
-    temp = cv.bitwise_and(temp_or, temp_or, mask=mask)
+    temp = cv.bitwise_and(temp_or, temp_or, mask=mask_inv)
+    #temp = cv.bitwise_and(image, temp)
     cv.imshow("temp or result", temp_or)
     cv.imshow("temp xor result", temp_xor)
     cv.imshow("temp and result", temp_and)
+    cv.imshow("temp xor 8bit", temp_xor8)
+    cv.imshow("temp gray", img2gray)
+    cv.imshow("mask", mask)
+    cv.imshow("mask inv", mask_inv)
     cv.imshow("temp result", temp)
     cv.waitKey(0)
     
