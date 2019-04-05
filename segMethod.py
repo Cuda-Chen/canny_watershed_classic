@@ -16,8 +16,8 @@ def mean_shift(inputfile, sp, sr):
     rng.seed(12345)
 
     image = cv.imread(inputfile)
-    print(image.shape)
-    print(image.dtype)
+    print("the shape of image is ", image.shape)
+    print("thie dtype of image is ", image.dtype)
 
     '''create mask image'''
     mask_image = np.zeros(image.shape, dtype=float)
@@ -152,8 +152,8 @@ if __name__ == "__main__":
     tEnd = time.time()
     print("Mean shift cost %f sec" % (tEnd - tStart))
 
-    image = img_as_float(io.imread(inputfile))
-    #image = io.imread(inputfile)
+    #image = img_as_float(io.imread(inputfile))
+    image = io.imread(inputfile)
     #mask_img = np.zeros(image.shape, dtype=np.uint8)
     mask_img = np.zeros(image.shape, dtype=float)
 
