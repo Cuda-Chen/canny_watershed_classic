@@ -7,6 +7,8 @@ import random as rng
 import argparse
 import time
 
+#import canny_watershed as cannyWshed
+
 from skimage.segmentation import felzenszwalb, slic, quickshift
 from skimage.segmentation import mark_boundaries
 from skimage.util import img_as_float
@@ -117,6 +119,30 @@ def mean_shift(inputfile, sp, sr):
     #return dst
     return final
 
+def cannyWatershed(inputfile):
+    img = io.imread(inputfile)
+    #img = cv.imread(inputfile)
+    gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    high_thresh, thresh_img = cv.threshold(gray, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
+    low_thresh = high_thresh * 0.5 
+    marker = cv.GaussianBlur(gray, (5, 5), 2)
+    #canny = cv.Canny(marker, 40, 100)
+    canny = cv.Canny(marker, low_thresh, high_thresh)
+    _, contours, hierarchy = cv.findContours(canny, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    marker32 = np.int32(marker)
+    watershed = cv.watershed(img, marker32)
+    m = cv.convertScaleAbs(marker32)
+    _, thresh = cv.threshold(m, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
+    thresh_inv = cv.bitwise_not(thresh)
+    temp = cv.bitwise_and(img, img, mask=thresh)
+    temp1 = cv.bitwise_and(img, img, mask=thresh_inv)
+    result = cv.addWeighted(temp, 1, temp1, 1, 0)
+    final = cv.drawContours(result, contours, -1, (0, 0, 255), 1)
+    mask = np.zeros(img.shape, dtype=float)
+    edgemap = cv.drawContours(mask, contours, -1, (255, 0, 0), 1)
+
+    return edgemap
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', type=str, help='input image path')
@@ -146,7 +172,9 @@ if __name__ == "__main__":
 
     # mean shift
     tStart = time.time()
-    meanshift_result = mean_shift(inputfile, sp=args.meanshift_sp, sr=args.meanshift_sr)
+    #meanshift_result = mean_shift(inputfile, sp=args.meanshift_sp, sr=args.meanshift_sr)
+    #meanshift_result = cannyWshed.cannyWatershed(inputfile)
+    meanshift_result = cannyWatershed(inputfile)
     print("the shape of meanshift_result is ", meanshift_result.shape)
     print("the dtype of meanshift_result is ", meanshift_result.dtype)
     tEnd = time.time()
@@ -246,8 +274,8 @@ if __name__ == "__main__":
     #cv.imshow("temp gray", img2gray)
     #cv.imshow("mask", mask)
     #cv.imshow("mask inv", mask_inv)
-    #cv.imshow("temp result", temp)
-    #cv.waitKey(0)
+    cv.imshow("temp result", temp)
+    cv.waitKey(0)
     
     #cv.imwrite(output_result, temp)
     io.imsave(output_result, temp)
