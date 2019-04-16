@@ -124,7 +124,7 @@ def cannyWatershed(inputfile):
     #img = cv.imread(inputfile)
     gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
     high_thresh, thresh_img = cv.threshold(gray, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
-    low_thresh = high_thresh * 0.5 
+    low_thresh = high_thresh * 0.3 
     marker = cv.GaussianBlur(gray, (5, 5), 2)
     #canny = cv.Canny(marker, 40, 100)
     canny = cv.Canny(marker, low_thresh, high_thresh)
@@ -137,7 +137,10 @@ def cannyWatershed(inputfile):
     temp = cv.bitwise_and(img, img, mask=thresh)
     temp1 = cv.bitwise_and(img, img, mask=thresh_inv)
     result = cv.addWeighted(temp, 1, temp1, 1, 0)
-    final = cv.drawContours(result, contours, -1, (0, 0, 255), 1)
+    #final = cv.drawContours(result, contours, -1, (0, 0, 255), 1)
+    final = cv.drawContours(result, contours, -1, (255, 0, 0), 1)
+    #cv.imshow('watershed', final)
+    #cv.waitKey(0)
     mask = np.zeros(img.shape, dtype=float)
     edgemap = cv.drawContours(mask, contours, -1, (255, 0, 0), 1)
 
@@ -159,13 +162,16 @@ if __name__ == "__main__":
     superpixel_sigma = 0.5
     superpixel_color = (1, 0, 0)
 
-    output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(args.meanshift_sp) + '_' + str(args.meanshift_sr) + '.bmp'
+    #output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(args.meanshift_sp) + '_' + str(args.meanshift_sr) + '.bmp'
+    output_cannyWatershed = os.path.splitext(inputfile)[0] + '_cannyWatershed' + '.bmp'
     output_felzenszwalb = os.path.splitext(inputfile)[0] + '_felzenswalb_' + str(args.fz_min_size) + '.bmp'
     output_slic = os.path.splitext(inputfile)[0] + '_slic_' + str(args.SLIC_n_segments) + '.bmp'
     output_quickshift = os.path.splitext(inputfile)[0] + '_quickshift_' + str(args.quick_shift_max_dist) + '.bmp'
+    output_mask = os.path.splitext(inputfile)[0] + '_mask' + '.bmp'
     output_result = os.path.splitext(inputfile)[0] + '_result' + '.bmp'
 
-    print(output_meanshift)
+    #print(output_meanshift)
+    print(output_cannyWatershed)
     print(output_felzenszwalb)
     print(output_slic)
     print(output_quickshift)
@@ -174,14 +180,15 @@ if __name__ == "__main__":
     tStart = time.time()
     #meanshift_result = mean_shift(inputfile, sp=args.meanshift_sp, sr=args.meanshift_sr)
     #meanshift_result = cannyWshed.cannyWatershed(inputfile)
-    meanshift_result = cannyWatershed(inputfile)
-    print("the shape of meanshift_result is ", meanshift_result.shape)
-    print("the dtype of meanshift_result is ", meanshift_result.dtype)
+    cannyWatershed_result = cannyWatershed(inputfile)
+    print("the shape of cannyWatershed_result is ", cannyWatershed_result.shape)
+    print("the dtype of cannyWatershed_result is ", cannyWatershed_result.dtype)
     tEnd = time.time()
     print("Mean shift cost %f sec" % (tEnd - tStart))
 
     #image = img_as_float(io.imread(inputfile))
     image = io.imread(inputfile)
+    imageFloat = img_as_float(io.imread(inputfile))
     #mask_img = np.zeros(image.shape, dtype=np.uint8)
     mask_img = np.zeros(image.shape, dtype=float)
 
@@ -212,6 +219,8 @@ if __name__ == "__main__":
     felzenszwalb_result = mark_boundaries(mask_img, segment_felzenszwalb, color=superpixel_color)
     slic_result = mark_boundaries(mask_img, segment_slic, color=superpixel_color)
     quickshift_result = mark_boundaries(mask_img, segment_quickshift, color=superpixel_color)
+    #print("the shape of cannyWatershed is ", cannyWatershed.shape)
+    #print("the dtype of cannyWatershed is ", cannyWatershed.dtype)
     print("the shape of felzenszwalb_result is ", felzenszwalb_result.shape)
     print("the dtype of felzenszwalb_result is ", felzenszwalb_result.dtype)
     print("the shape of slic_result is ", slic_result.shape)
@@ -238,12 +247,14 @@ if __name__ == "__main__":
     plt.show()
     '''
     
-    meanshift_result_temp = meanshift_result.astype(np.uint8)
+    #meanshift_result_temp = meanshift_result.astype(np.uint8)
+    cannyWatershed_temp = cannyWatershed_result.astype(np.uint8)
     #cv.imwrite(output_meanshift, meanshift_result)
-    io.imsave(output_meanshift, meanshift_result_temp)
-    io.imsave(output_felzenszwalb, felzenszwalb_result)
-    io.imsave(output_slic, slic_result)
-    io.imsave(output_quickshift, quickshift_result)
+    #io.imsave(output_meanshift, cv.addWeighted(image, 1, cannyWatershed_temp, 1, 0))
+    io.imsave(output_cannyWatershed, cv.addWeighted(image, 1, cannyWatershed_temp, 1, 0))
+    io.imsave(output_felzenszwalb, mark_boundaries(image, segment_felzenszwalb, color=superpixel_color))
+    io.imsave(output_slic, mark_boundaries(image, segment_slic, color=superpixel_color))
+    io.imsave(output_quickshift, mark_boundaries(image, segment_quickshift, color=superpixel_color))
     
     
     #cv.imshow("mean shift", meanshift_result)
@@ -252,10 +263,12 @@ if __name__ == "__main__":
     #cv.imshow("quick shift", quickshift_result)
     #cv.waitKey(0)
     
-    temp_or = cv.bitwise_or(meanshift_result, felzenszwalb_result) 
+    #temp_or = cv.bitwise_or(meanshift_result, felzenszwalb_result) 
+    temp_or = cv.bitwise_or(cannyWatershed_result, felzenszwalb_result)
     temp_or = cv.bitwise_or(temp_or, slic_result)
     temp_or = cv.bitwise_or(temp_or, quickshift_result)
-    temp_xor = cv.bitwise_xor(meanshift_result, felzenszwalb_result) 
+    #temp_xor = cv.bitwise_xor(meanshift_result, felzenszwalb_result) 
+    temp_xor = cv.bitwise_xor(cannyWatershed_result, felzenszwalb_result)
     temp_xor = cv.bitwise_xor(felzenszwalb_result, slic_result)
     temp_xor = cv.bitwise_xor(temp_xor, quickshift_result)
     temp_and = cv.bitwise_and(felzenszwalb_result, slic_result)
@@ -274,8 +287,10 @@ if __name__ == "__main__":
     #cv.imshow("temp gray", img2gray)
     #cv.imshow("mask", mask)
     #cv.imshow("mask inv", mask_inv)
-    cv.imshow("temp result", temp)
-    cv.waitKey(0)
+    #cv.imshow("temp result", temp)
+    #cv.waitKey(0)
     
     #cv.imwrite(output_result, temp)
-    io.imsave(output_result, temp)
+    #temp = temp.astype(np.uint8)
+    io.imsave(output_mask, temp)
+    io.imsave(output_result, cv.addWeighted(imageFloat, 1, temp, 1, 0))
