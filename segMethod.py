@@ -120,16 +120,47 @@ def mean_shift(inputfile, sp, sr):
     return final
 
 def cannyWatershed(inputfile):
+    sigma = 0.7
+
     img = io.imread(inputfile)
     #img = cv.imread(inputfile)
     gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    #high_thresh, thresh_img = cv.threshold(gray, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
+    #low_thresh = high_thresh * 0.3 
+    marker = cv.GaussianBlur(gray, (5, 5), 2) 
     high_thresh, thresh_img = cv.threshold(gray, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
     low_thresh = high_thresh * 0.3 
-    marker = cv.GaussianBlur(gray, (5, 5), 2)
+    v = np.median(gray)
+    #low_thresh = int(max(0, (1.0 - sigma) * v))
+    #high_thresh = int(max(255, (1.0 + sigma) * v))
     #canny = cv.Canny(marker, 40, 100)
     canny = cv.Canny(marker, low_thresh, high_thresh)
-    _, contours, hierarchy = cv.findContours(canny, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    marker32 = np.int32(marker)
+    cv.imshow("canny", canny)
+    #_, contours, hierarchy = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+
+    index = 0
+    compCount = 0
+    marks = np.zeros(gray.shape, dtype=np.int32)
+    imageContours = np.zeros(gray.shape, dtype=np.uint8)
+    #markstemp = marks.copy()
+    
+    for i in range(len(contours)):
+        cv.drawContours(marks, contours, i, (compCount+1, compCount+1, compCount+1), 1, 8, hierarchy)
+        cv.drawContours(imageContours, contours, i, (255, 255, 255), 1)
+        compCount += 1
+    
+    print(len(contours))
+    #cv.drawContours(marks, contours, -1, (255, 255, 255), 1)
+    marksShow = cv.convertScaleAbs(marks)
+    cv.imshow("mark show", marksShow)
+    cv.imshow("contour", imageContours)
+
+    cv.watershed(img, marks)
+    afterWshed = cv.convertScaleAbs(marks)
+
+    #marker32 = np.int32(marker)
+    '''
     cv.watershed(img, marker32)
     m = cv.convertScaleAbs(marker32)
     _, thresh = cv.threshold(m, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
@@ -139,12 +170,16 @@ def cannyWatershed(inputfile):
     result = cv.addWeighted(temp, 1, temp1, 1, 0)
     #final = cv.drawContours(result, contours, -1, (0, 0, 255), 1)
     final = cv.drawContours(result, contours, -1, (255, 255, 255), 1)
-    cv.imshow('watershed', final)
+    '''
+    cv.imshow('watershed', afterWshed)
     #cv.waitKey(0)
     mask = np.zeros(img.shape, dtype=float)
     edgemap = cv.drawContours(mask, contours, -1, (255, 255, 255), 1)
+    cv.imshow("edge map", edgemap)
+    #edgemap = cv.addWeighted(mask, 1, afterWshed, 1, 0)
 
     return edgemap
+    #return afterWshed
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
