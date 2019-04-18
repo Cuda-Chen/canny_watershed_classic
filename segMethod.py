@@ -138,11 +138,11 @@ def cannyWatershed(inputfile):
     temp1 = cv.bitwise_and(img, img, mask=thresh_inv)
     result = cv.addWeighted(temp, 1, temp1, 1, 0)
     #final = cv.drawContours(result, contours, -1, (0, 0, 255), 1)
-    final = cv.drawContours(result, contours, -1, (255, 0, 0), 2)
+    final = cv.drawContours(result, contours, -1, (255, 255, 255), 1)
     cv.imshow('watershed', final)
     #cv.waitKey(0)
     mask = np.zeros(img.shape, dtype=float)
-    edgemap = cv.drawContours(mask, contours, -1, (255, 0, 0), 2)
+    edgemap = cv.drawContours(mask, contours, -1, (255, 255, 255), 1)
 
     return edgemap
 
@@ -159,8 +159,8 @@ if __name__ == "__main__":
     print("hello")
 
     inputfile = args.input_file
-    superpixel_sigma = 0.5
-    superpixel_color = (1, 0, 0)
+    superpixel_sigma = 1.5
+    superpixel_color = (1, 1, 1)
 
     #output_meanshift = os.path.splitext(inputfile)[0] + '_meanshift_' + str(args.meanshift_sp) + '_' + str(args.meanshift_sr) + '.bmp'
     output_cannyWatershed = os.path.splitext(inputfile)[0] + '_cannyWatershed' + '.bmp'
@@ -264,7 +264,7 @@ if __name__ == "__main__":
     cv.imshow("temp one", result_image)
     result_image = cv.bitwise_and(result_image, quickshift_result)
     cv.imshow("temp two", result_image)
-    result_image = cv.bitwise_and(result_image, cannyWatershed_result)
+    result_image = cv.bitwise_or(result_image, cannyWatershed_result)
     cv.imshow("temp three", result_image)
 
     #cv.imshow("FH", felzenszwalb_result)
