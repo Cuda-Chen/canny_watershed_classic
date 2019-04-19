@@ -177,8 +177,9 @@ def cannyWatershed(inputfile):
     edgemap = cv.drawContours(mask, contours, -1, (255, 255, 255), 1)
     cv.imshow("edge map", edgemap)
     #edgemap = cv.addWeighted(mask, 1, afterWshed, 1, 0)
-
-    return edgemap
+    
+    return marks
+    #return edgemap
     #return afterWshed
 
 if __name__ == "__main__":
@@ -215,9 +216,9 @@ if __name__ == "__main__":
     tStart = time.time()
     #meanshift_result = mean_shift(inputfile, sp=args.meanshift_sp, sr=args.meanshift_sr)
     #meanshift_result = cannyWshed.cannyWatershed(inputfile)
-    cannyWatershed_result = cannyWatershed(inputfile)
-    print("the shape of cannyWatershed_result is ", cannyWatershed_result.shape)
-    print("the dtype of cannyWatershed_result is ", cannyWatershed_result.dtype)
+    segment_cannyWatershed = cannyWatershed(inputfile)
+    print("the shape of segment_cannyWatershed is ", segment_cannyWatershed.shape)
+    print("the dtype of segment_cannyWatershed is ", segment_cannyWatershed.dtype)
     tEnd = time.time()
     print("Mean shift cost %f sec" % (tEnd - tStart))
 
@@ -251,6 +252,7 @@ if __name__ == "__main__":
     tEnd = time.time()
     print("quickshift cost %f sec" % (tEnd - tStart))
 
+    cannyWatershed_result = mark_boundaries(mask_img, segment_cannyWatershed, color=superpixel_color)
     felzenszwalb_result = mark_boundaries(mask_img, segment_felzenszwalb, color=superpixel_color)
     slic_result = mark_boundaries(mask_img, segment_slic, color=superpixel_color)
     quickshift_result = mark_boundaries(mask_img, segment_quickshift, color=superpixel_color)
@@ -283,7 +285,7 @@ if __name__ == "__main__":
     '''
     
     #meanshift_result_temp = meanshift_result.astype(np.uint8)
-    cannyWatershed_temp = cannyWatershed_result.astype(np.uint8)
+    #cannyWatershed_temp = cannyWatershed_result.astype(np.uint8)
     #cv.imwrite(output_meanshift, meanshift_result)
     #io.imsave(output_meanshift, cv.addWeighted(image, 1, cannyWatershed_temp, 1, 0))
     '''
