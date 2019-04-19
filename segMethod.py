@@ -127,7 +127,7 @@ def cannyWatershed(inputfile):
     gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
     #high_thresh, thresh_img = cv.threshold(gray, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
     #low_thresh = high_thresh * 0.3 
-    marker = cv.GaussianBlur(gray, (5, 5), 2) 
+    marker = cv.GaussianBlur(gray, (7, 7), 2) 
     high_thresh, thresh_img = cv.threshold(gray, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
     low_thresh = high_thresh * 0.3 
     v = np.median(gray)
@@ -178,7 +178,7 @@ def cannyWatershed(inputfile):
     cv.imshow("edge map", edgemap)
     #edgemap = cv.addWeighted(mask, 1, afterWshed, 1, 0)
     
-    return marks
+    return marks, edgemap
     #return edgemap
     #return afterWshed
 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     tStart = time.time()
     #meanshift_result = mean_shift(inputfile, sp=args.meanshift_sp, sr=args.meanshift_sr)
     #meanshift_result = cannyWshed.cannyWatershed(inputfile)
-    segment_cannyWatershed = cannyWatershed(inputfile)
+    segment_cannyWatershed, edge_canny = cannyWatershed(inputfile)
     print("the shape of segment_cannyWatershed is ", segment_cannyWatershed.shape)
     print("the dtype of segment_cannyWatershed is ", segment_cannyWatershed.dtype)
     tEnd = time.time()
@@ -288,21 +288,39 @@ if __name__ == "__main__":
     #cannyWatershed_temp = cannyWatershed_result.astype(np.uint8)
     #cv.imwrite(output_meanshift, meanshift_result)
     #io.imsave(output_meanshift, cv.addWeighted(image, 1, cannyWatershed_temp, 1, 0))
+    cv.imshow("canny+watershed", cannyWatershed_result)
+    cv.imshow("felzenszwalb", felzenszwalb_result)
+    cv.imshow("slic", slic_result)
+    cv.imshow("quick shift", quickshift_result)
     '''
     io.imsave(output_cannyWatershed, cv.addWeighted(image, 1, cannyWatershed_temp, 1, 0))
     io.imsave(output_felzenszwalb, mark_boundaries(image, segment_felzenszwalb, color=(0, 1, 0)))
     io.imsave(output_slic, mark_boundaries(image, segment_slic, color=(0, 0, 1)))
     io.imsave(output_quickshift, mark_boundaries(image, segment_quickshift, color=(1, 1, 0)))
     '''
-    result_image = np.ones(image.shape, dtype=float)
-    rows, cols, _ = result_image.shape
+    #result_image = np.ones(image.shape, dtype=float)
+    #rows, cols, _ = result_image.shape
 
-    result_image = cv.bitwise_and(felzenszwalb_result, slic_result)
-    cv.imshow("temp one", result_image)
-    result_image = cv.bitwise_and(result_image, quickshift_result)
-    cv.imshow("temp two", result_image)
-    result_image = cv.bitwise_or(result_image, cannyWatershed_result)
-    cv.imshow("temp three", result_image)
+    result_image_and = cv.bitwise_and(felzenszwalb_result, slic_result)
+    #cv.imshow("temp one", result_image)
+    cv.imshow("temp and", result_image_and)
+    result_image_or = cv.bitwise_or(felzenszwalb_result, slic_result)
+    result_image_or = cv.bitwise_or(result_image_or, quickshift_result)
+    result_image_or = cv.bitwise_or(result_image_or, cannyWatershed_result)
+    cv.imshow("temp or", result_image_or)
+    result_image_xor = cv.bitwise_xor(felzenszwalb_result, slic_result)
+    result_image_xor = cv.bitwise_xor(result_image_xor, quickshift_result)
+    result_image_xor = cv.bitwise_xor(result_image_xor, cannyWatershed_result)
+    cv.imshow('temp xor', result_image_xor)
+    result_image_sub = result_image_or -  result_image_xor
+    cv.imshow("temp sub", result_image_sub)
+    #result_image = result_image_sub + edge_canny
+    result_image = result_image_and + edge_canny
+    cv.imshow("temp result", result_image)
+    #result_image = cv.bitwise_and(result_image, quickshift_result)
+    #cv.imshow("temp two", result_image)
+    #result_image = cv.bitwise_or(result_image, cannyWatershed_result)
+    #cv.imshow("temp three", result_image)
 
     #cv.imshow("FH", felzenszwalb_result)
     #cv.imshow("SLIC", slic_result)
