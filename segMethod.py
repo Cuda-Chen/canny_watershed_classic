@@ -372,6 +372,14 @@ if __name__ == "__main__":
 
     cv.imshow("temp 2+3+4", temp_result)
 
+    temp_result_gray = cv.cvtColor(temp_result, cv.COLOR_RGB2GRAY)
+    _, contours, hierarchy = cv.findContours(temp_result_gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    drawing = np.zeros(image.shape, dtype=np.uint8)
+    for i in range(len(contours)):
+        color = [rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256)]
+        drawing = cv.drawContours(drawing, contours, i, color, 1, 8)
+    cv.imshow("drawing", drawing)
+
     '''
     result_image_or = cv.bitwise_or(felzenszwalb_result, slic_result)
     result_image_or = cv.bitwise_or(result_image_or, quickshift_result)
