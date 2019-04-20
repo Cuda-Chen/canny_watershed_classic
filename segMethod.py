@@ -10,7 +10,7 @@ import time
 #import canny_watershed as cannyWshed
 
 from skimage.segmentation import felzenszwalb, slic, quickshift
-from skimage.segmentation import mark_boundaries
+from skimage.segmentation import mark_boundaries, find_boundaries
 from skimage.util import img_as_float
 from skimage import io
 
@@ -302,11 +302,81 @@ if __name__ == "__main__":
     #rows, cols, _ = result_image.shape
 
     result_image_and = cv.bitwise_and(felzenszwalb_result, slic_result)
+    result_image_and = cv.bitwise_and(result_image_and, quickshift_result)
+    result_image_and = cv.bitwise_and(result_image_and, cannyWatershed_result)
     #cv.imshow("temp one", result_image)
     cv.imshow("temp and", result_image_and)
+    
+    bound_cannyWshed = find_boundaries(segment_cannyWatershed)
+    bound_fh = find_boundaries(segment_felzenszwalb)
+    bound_slic = find_boundaries(segment_slic)
+    bound_qs = find_boundaries(segment_quickshift)
+
+    temp_result = np.zeros(image.shape, dtype=np.uint8)
+    print(temp_result.shape)
+    print(temp_result.shape[0])
+    # strong edge
+    for i in range(temp_result.shape[0]):
+        for j in range(temp_result.shape[1]):
+            counter = 0
+            if bound_cannyWshed[i,j] == True:
+                counter += 1
+            if bound_fh[i,j] == True:
+                counter += 1
+            if bound_slic[i,j] == True:
+                counter += 1
+            if bound_qs[i,j] == True:
+                counter += 1
+
+            #print(counter)
+            if counter == 4:
+                temp_result[i,j,:] = [255, 255, 255]
+
+    cv.imshow("temp 4", temp_result)
+
+    # sub-strong edge
+    for i in range(temp_result.shape[0]):
+        for j in range(temp_result.shape[1]):
+            counter = 0
+            if bound_cannyWshed[i,j] == True:
+                counter += 1
+            if bound_fh[i,j] == True:
+                counter += 1
+            if bound_slic[i,j] == True:
+                counter += 1
+            if bound_qs[i,j] == True:
+                counter += 1
+
+            #print(counter)
+            if counter == 3:
+                temp_result[i,j,:] = [255, 255, 255]
+
+    cv.imshow("temp 4+3", temp_result)
+
+    # weaker edge
+    for i in range(temp_result.shape[0]):
+        for j in range(temp_result.shape[1]):
+            counter = 0
+            if bound_cannyWshed[i,j] == True:
+                counter += 1
+            if bound_fh[i,j] == True:
+                counter += 1
+            if bound_slic[i,j] == True:
+                counter += 1
+            if bound_qs[i,j] == True:
+                counter += 1
+
+            #print(counter)
+            if counter == 2:
+                temp_result[i,j,:] = [255, 255, 255]
+
+    cv.imshow("temp 2+3+4", temp_result)
+
+    '''
     result_image_or = cv.bitwise_or(felzenszwalb_result, slic_result)
     result_image_or = cv.bitwise_or(result_image_or, quickshift_result)
     result_image_or = cv.bitwise_or(result_image_or, cannyWatershed_result)
+    
     cv.imshow("temp or", result_image_or)
     result_image_xor = cv.bitwise_xor(felzenszwalb_result, slic_result)
     result_image_xor = cv.bitwise_xor(result_image_xor, quickshift_result)
@@ -317,6 +387,7 @@ if __name__ == "__main__":
     #result_image = result_image_sub + edge_canny
     result_image = result_image_and + edge_canny
     cv.imshow("temp result", result_image)
+    '''
     #result_image = cv.bitwise_and(result_image, quickshift_result)
     #cv.imshow("temp two", result_image)
     #result_image = cv.bitwise_or(result_image, cannyWatershed_result)
